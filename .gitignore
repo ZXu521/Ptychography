@@ -216,5 +216,4 @@ __pycache__/
 .venv
 .ipynb_checkpoints/
 .DS_Store
-*.pdf
 >>>>>>> 2c19308 (Save local changes before rebase)
