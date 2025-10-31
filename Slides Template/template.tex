@@ -1,0 +1,189 @@
+%============================================================
+%     Group Meeting Report Template — Computational Imaging
+%============================================================
+\documentclass[15pt]{beamer}
+\makeatletter
+\makeatother
+
+%======================== packages & settings ========================
+\usepackage{amsmath, pifont, bookmark, tabularx, booktabs, adjustbox, graphicx, caption, subcaption, listings, color, tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,shapes.misc,fit,calc,decorations.pathreplacing}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
+
+%======================== theme & fonts ========================
+\usetheme{Montpellier}
+\renewcommand{\familydefault}{\sfdefault}
+
+% TOC numbered
+\setbeamertemplate{section in toc}[sections numbered]
+\setbeamertemplate{subsection in toc}[subsections numbered]
+
+% footer
+\setbeamerfont{footline}{size=\tiny}
+\setbeamertemplate{footline}{
+  \leavevmode
+  \hfill \insertframenumber{} / \inserttotalframenumber \hspace{2ex}\vskip2pt}
+
+% title fonts
+\setbeamerfont{title}{size=\fontsize{20pt}{24pt}\selectfont}
+\setbeamerfont{subtitle}{size=\fontsize{12pt}{14.4pt}\selectfont}
+\setbeamerfont{author}{size=\fontsize{10pt}{12pt}\selectfont}
+\setbeamerfont{date}{size=\fontsize{10pt}{12pt}\selectfont}
+
+%======================== macros ========================
+\newcommand{\Obj}{\mathrm{O}}
+\newcommand{\Probe}{\mathrm{P}}
+\newcommand{\Exit}{\psi}
+\newcommand{\uu}{\mathbf{u}}
+\newcommand{\rr}{\mathbf{r}}
+\newcommand{\Rj}{\mathbf{R}_j}
+\newcommand{\kk}{\mathbf{k}}
+
+\tikzset{
+  >=Stealth,
+  line/.style      = {->, thick},
+  block/.style     = {rectangle, rounded corners, draw, align=left, thick, inner sep=6pt, fill=white},
+  io/.style        = {trapezium, trapezium left angle=70, trapezium right angle=110, draw, thick, align=left, inner sep=6pt, fill=white},
+  smallblock/.style= {rectangle, rounded corners, draw, align=left, thick, inner sep=4pt, fill=white, font=\small},
+  loopbox/.style   = {rectangle, rounded corners, draw, dashed, thick, inner sep=8pt},
+  note/.style      = {rectangle, draw, align=left, inner sep=4pt, fill=white, font=\scriptsize}
+}
+
+%======================== basic info ========================
+\title{Weekly Research Report: Computational Ptychography}
+\subtitle{Group Meeting Template}
+\author{Zihan Xu}
+\date{\today}
+
+%============================================================
+\begin{document}
+
+%---------------- title ----------------
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+\addtocounter{framenumber}{-1}
+
+%---------------- toc ----------------
+\begin{frame}[plain]{Outline}
+  \tableofcontents[sectionstyle=show, subsectionstyle=hide]
+\end{frame}
+\addtocounter{framenumber}{-1}
+
+%============================================================
+\section{Research Progress Overview}
+%============================================================
+\begin{frame}{Summary of This Week}
+\footnotesize
+\begin{itemize}
+  \item Implemented new simulation for PIE / ePIE with modified probe update.
+  \item Compared convergence curves across multiple $\beta$ values.
+  \item Identified asymmetric phase artifacts at edges.
+  \item Prepared new results for potential conference submission.
+\end{itemize}
+
+\vspace{2mm}
+\begin{block}{Key Results}
+\centering
+% \includegraphics[width=0.6\linewidth]{placeholder_result.png}
+{\scriptsize Example: Reconstructed amplitude and phase (placeholder).}
+\end{block}
+\end{frame}
+
+%============================================================
+\section{Algorithmic Development}
+%============================================================
+\begin{frame}[fragile]{Algorithmic Updates}
+\footnotesize
+\textbf{Focus:} Explore new hybrid update strategy between ePIE and mPIE.
+
+\begin{itemize}
+  \item Introduced momentum-like correction term for object update.
+  \item Modified probe normalization for stability.
+  \item Implemented adaptive $\beta$ scheduling to accelerate convergence.
+\end{itemize}
+
+\vspace{2mm}
+\begin{exampleblock}{Current Implementation (Python snippet)}
+\scriptsize
+\begin{lstlisting}[language=Python]
+O_next = O_curr + beta * P_conj / (|P|^2 + alpha) * (Psi_corr - Psi_guess)
+momentum = gamma * (O_next - O_prev)
+O_next += momentum
+\end{lstlisting}
+\end{exampleblock}
+\end{frame}
+
+
+%============================================================
+\section{Experimental / Simulation Results}
+%============================================================
+\begin{frame}{Simulation Results}
+\footnotesize
+\begin{columns}[T,totalwidth=\textwidth]
+  \begin{column}{0.5\textwidth}
+    \centering
+    % \includegraphics[width=\linewidth]{placeholder_object.png}
+    \scriptsize Reconstructed Object (placeholder)
+  \end{column}
+  \begin{column}{0.5\textwidth}
+    \centering
+    % \includegraphics[width=\linewidth]{placeholder_probe.png}
+    \scriptsize Retrieved Probe (placeholder)
+  \end{column}
+\end{columns}
+
+\vspace{3mm}
+\scriptsize
+\textbf{Observation:}  
+Stable convergence within first 100 iterations.  
+Residual phase noise concentrated at boundary due to overlap deficiency.
+\end{frame}
+
+%============================================================
+\section{Discussion and Challenges}
+%============================================================
+\begin{frame}{Issues and Analysis}
+\footnotesize
+\begin{itemize}
+  \item \textbf{Asymmetric edge artifacts:} due to raster scan bias.
+  \item \textbf{Probe drift simulation:} not yet stabilized.
+  \item \textbf{GPU bottleneck:} memory usage increases quadratically with patch overlap.
+\end{itemize}
+
+\vspace{3mm}
+\begin{block}{Next Steps}
+\begin{enumerate}
+  \item Implement randomized scan ordering (ePIE style).
+  \item Add padding scheme for FFT acceleration.
+  \item Start integrating real experimental data from CLS dataset.
+\end{enumerate}
+\end{block}
+\end{frame}
+
+%============================================================
+\section{Future Plan}
+%============================================================
+\begin{frame}{Plans for Next Week}
+\footnotesize
+\begin{itemize}
+  \item [\ding{43}] Finish GPU version of mPIE with adaptive $\beta$.
+  \item [\ding{43}] Start drafting short paper for internal progress review.
+  \item [\ding{43}] Prepare new figures for PIE-family convergence comparison.
+\end{itemize}
+
+
+\end{frame}
+
+%============================================================
+\section*{Acknowledgement}
+%============================================================
+\begin{frame}[plain]
+\centering
+\vspace{1cm}
+\Huge Thank You!\\[3mm]
+\large Questions and Discussion
+\end{frame}
+
+\end{document}
