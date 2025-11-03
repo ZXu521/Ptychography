@@ -1,0 +1,11 @@
+\beamer@sectionintoc {1}{Research Progress Overview}{3}{0}{1}
+\beamer@sectionintoc {2}{ELectron Setup}{4}{0}{2}
+\beamer@sectionintoc {3}{Scanning Geometry}{6}{0}{3}
+\beamer@sectionintoc {4}{Probe Focus and Overlap}{7}{0}{4}
+\beamer@sectionintoc {5}{Coherence}{9}{0}{5}
+\beamer@sectionintoc {6}{Overall Framework}{12}{0}{6}
+\beamer@sectionintoc {7}{Algorithm Evolution (2004–2025)}{13}{0}{7}
+\beamer@sectionintoc {8}{Modern Research Lines}{14}{0}{8}
+\beamer@sectionintoc {9}{Propagation Models and Geometry}{15}{0}{9}
+\beamer@sectionintoc {10}{Maximum-Likelihood PIE}{16}{0}{10}
+\beamer@sectionintoc {11}{Future Plan}{19}{0}{11}
