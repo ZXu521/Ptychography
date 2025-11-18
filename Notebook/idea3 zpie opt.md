@@ -13,7 +13,3 @@ z-pie optimization
 
 
 
-
-
-
-™
