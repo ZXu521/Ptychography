@@ -176,6 +176,3 @@ Researchers deal with this in a few ways:
 
 ------
 
-2008 nature chenzhen
-
-约翰是谁？

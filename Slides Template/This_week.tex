@@ -1,5 +1,5 @@
 %============================================================
-%     Group Meeting Report Template — Computational Imaging
+%     Group Meeting Report — Computational Imaging (English)
 %============================================================
 \documentclass[15pt]{beamer}
 \makeatletter
@@ -10,8 +10,6 @@
 \usetikzlibrary{arrows.meta,positioning,shapes.geometric,shapes.misc,fit,calc,decorations.pathreplacing}
 \usepackage{hyperref}
 \hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
-\usepackage{array}
-\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
 
 %======================== theme & fonts ========================
 \usetheme{Montpellier}
@@ -53,8 +51,7 @@
 }
 
 %======================== basic info ========================
-\title{Weekly Research Report: Electron Ptychography Overview}
-%\subtitle{}
+\title{Weekly Progress Report}
 \author{Zihan Xu}
 \date{\today}
 
@@ -69,360 +66,279 @@
 
 %---------------- toc ----------------
 \begin{frame}[plain]{Outline}
-  \tableofcontents
+  \tableofcontents[sectionstyle=show, subsectionstyle=hide]
 \end{frame}
 \addtocounter{framenumber}{-1}
 
-
 %============================================================
-\section{Research Progress Overview}
+\section{Weekly Progress Overview}
 %============================================================
 \begin{frame}{Summary of This Week}
 \footnotesize
 \begin{itemize}
-  \item Read Electron Ptychography.
-  \item Read Mixed-state electron ptychography enables sub-angstrom resolution imaging with picometer precision at low dose.
-  \item Configure the environment for MatLab based Mixed-state Ptycho implementation.
-  \item Start debugging the code and understanding the algorithm flow.
+  \item Completed systematic understanding of \\Projection-based vs Optimization-based algorithms.
+  \item Studied Maximum-Likelihood refinement for CDI (Thibault).
+  \item Studied IterativeLeast-squares refinement for ML-Ptycho (PSI).
+  \item Read "Automatic Parameter Selection for Electron Ptychography via Bayesian Optimization".
+  \item Implemented Zhen Chen's Mixed-state ptychography code in Matlab.
 \end{itemize}
 
 \end{frame}
-
-
-% ======================================================
-\section{ELectron Setup}
-% ======================================================
-
-\begin{frame}{Electron Setup}
-    \includegraphics[width=\linewidth]{setup.png}
-\end{frame}
-
-
-\begin{frame}{Fraunhofer vs Fresnel Conditions}
-Fresnel number $N_F = \frac{D^2}{\lambda z}$.
-
-  \begin{itemize}
-\item $\lambda: Wavelength$
-\item z: Distance from detector to sample
-\item $D: Aperture size$
-  \end{itemize}
-\textbf{Conclusion:} Although the electron wavelength is extremely short, the probe is very small and the detector is close, so electron ptychography still works in the Fresnel (near-field) regime.
-\end{frame}
-
-
-% ======================================================
-\section{Scanning Geometry}
-% ======================================================
-
-
-\begin{frame}{Scanning Geometry: Optical vs Electron Ptychography}
-\begin{itemize}
-\item \textbf{Optical:} the probe scans \emph{laterally} across the sample.
-\item \textbf{Electron:} the probe remains fixed, but the \emph{incident angle} changes.
-\item This produces a \textbf{tilted beam} instead of a shifted one.
-\item The propagation distance \textit{z} is approximately proportional to the tilt angle $\theta$.
-\end{itemize}
-\end{frame}
-
-% ======================================================
-\section{Probe Focus and Overlap}
-% ======================================================
-
-
-\begin{frame}{In-focus and Defocus Probe in Ptychography}
-\small
-The terms \textit{in-focus} and \textit{defocus} describe whether the probe focus coincides with the sample plane. \\
-According to the Fresnel number relation ($N_F = D^2 / (\lambda z)$), an \textbf{in-focus probe} is usually preferred:
-\begin{itemize}
-\item Approximates the Fraunhofer (Fourier) condition.
-\item Maximizes spatial coherence and signal-to-noise ratio.
-\item Reduces computational complexity.
-\end{itemize}
-However, a \textbf{defocused probe} is often used in electron ptychography, where near-field propagation carries valuable phase information. Diffraction disks overlap on the detector, forming \textbf{k-space interference} that can be exploited for phase retrieval.
-\end{frame}
-
-
-\begin{frame}{When to Use Defocused (Fresnel) Probes}
-\scriptsize
-
-\begin{tabular}{p{2.3cm} p{4.9cm} p{4.5cm}}
-\textbf{Situation} & \textbf{Reason} & \textbf{Alternative approach} \\
-\hline
-\textbf{Thick sample ($\geq$50 nm)} & Multiple scattering invalidates projection approximation & Multislice or adaptive-z PIE \\
-\textbf{Partially coherent source} & Finite source size shortens coherence length & Mixed-state PIE \\
-\textbf{Need for depth / 3D info} & Single-plane probe cannot access z-structure & z-PIE / 3D ptychography \\
-\textbf{Long wavelength (optical / soft X-ray)} & Hard to reach Fraunhofer regime & Fresnel-PIE / z-PIE \\
-\end{tabular}
-
-\vspace{6pt}
-In optical ptychography, information mainly comes from \textbf{real-space overlap} on the specimen. \\
-In electron ptychography, even a defocused probe can create \textbf{k-space overlap} on the detector — thus electrons can exhibit \textbf{dual overlap}: both in real and reciprocal space.
-\end{frame}
-% ======================================================
-\section{Coherence}
-% ======================================================
-
-\begin{frame}{Coherence in Optical and Electron Systems}
-\small
-Two main types of coherence are usually discussed:
-\vspace{6pt}
-
-\renewcommand{\arraystretch}{0.95}
-\begin{tabular}{p{3cm} p{4cm} p{4cm}}
-\textbf{Type} & \textbf{Meaning} & \textbf{Typical Effect} \\
-\hline
-\textbf{Spatial coherence} & Phase correlation between different points across a wavefront & Determines diffraction contrast and fringe visibility \\
-\textbf{Temporal coherence} & Phase stability between different energy or time components & Determines energy spread and chromatic blur \\
-\end{tabular}
-
-\vspace{6pt}
-
-In ptychography, \textbf{spatial coherence} is the key: 
-the illumination must maintain a well-defined complex amplitude across the probe 
-so that overlapping regions encode consistent phase information for retrieval.
-\end{frame}
-
-\begin{frame}{Why the In-focus Probe Has the Best Coherence}
-\small
-When a wave propagates away from its focal plane, different parts of the beam travel along unequal optical paths, introducing curvature-dependent phase shifts. 
-The field can be written as:
-\[
-\Psi(x,y,z) = P(x,y)e^{i k (x^2 + y^2)/(2R(z))},
-\]
-where $R(z)$ is the radius of curvature. 
-The farther from focus, the faster the curvature term varies, reducing lateral phase uniformity — and thus spatial coherence.
-\vspace{4pt}
-
-At the \textbf{sample plane of an in-focus probe}, $R(z)\to\infty$, and the wavefront becomes nearly flat, meaning all points share a stable phase. 
-This corresponds to maximum coherence and the highest interference contrast.
-\end{frame}
-
-\begin{frame}{Defocus and Coherence Degradation}
-\small
-In a defocused (Fresnel) condition:
-\begin{itemize}
-  \item Different points of the probe have unequal path lengths.
-  \item The phase relationship between points becomes partially random.
-  \item The probe behaves as a mixed state, represented as $\rho_P = \sum_i w_i |P_i\rangle\langle P_i|$.
-\end{itemize}
-
-As a result, even a highly coherent source becomes partially coherent after significant defocus propagation. 
-For low-dose or fast measurements, hybrid pixel detectors such as \textbf{EMPAD} are preferred over CCDs to capture diffraction patterns with high dynamic range and low noise.
-\end{frame}
-
-
-% ======================================================
-\section{Overall Framework}
-% ======================================================
-
-
-\begin{frame}{Algorithmic Lineage: from DPC to PIE-family}
-\centering
-\scalebox{0.4}{
-\begin{tikzpicture}[node distance=1.0cm, every node/.style={align=center, font=\scriptsize, rounded corners, draw, fill=gray!5}]
-
-
-% Level 1
-\node (dpc) {\textbf{DPC-STEM}\\(Differential Phase Contrast)\\Linear, quadrant detection, extracts phase gradient};
-
-
-% Level 2
-\node (com) [below=of dpc] {\textbf{CoM-STEM}\\(Center of Mass)\\Continuous DPC, computes diffraction centroid $(\nabla \phi)$};
-
-
-% Level 3 - branches
-\node (ssb) [below left=1.0cm and 2.5cm of com] {\textbf{SSB Ptychography}\\(Single-Sideband)\\Weak-phase, semi-linear\\Frequency-domain interference separation};
-
-
-\node (wdd) [below right=1.0cm and 2.5cm of com] {\textbf{WDD Ptychography}\\(Wigner Distribution Deconvolution)\\Frequency-domain deconvolution\\Non-iterative analytical method};
-
-
-% Connection to PIE family
-\node (dm) [below=2.3cm of com, text width=5.8cm] {\textbf{CDI-era / Difference Map Framework}\\General iterative framework for phase retrieval};
-
-
-\node (pie) [below=1.2cm of dm, text width=6.5cm] {\textbf{PIE-family Algorithms}\\(PIE → ePIE → rPIE → mPIE → pcPIE → zPIE …)\\Nonlinear, full-wave iterative reconstruction};
-
-
-\node (modern) [below=1.4cm of pie, text width=6.5cm] {\textbf{Modern Extensions (2018–Now)}\\• SR-PIE / Sub-pixel PIE\\• Momentum-PIE\\• ML / Deep Learning Ptycho (PtychoNN, PoCA, Ptychoformer)\\• Differentiable / Hybrid Physics-DL Frameworks};
-
-
-% Connections
-\draw[->, thick] (dpc) -- (com);
-\draw[->, thick] (com) -- (ssb);
-\draw[->, thick] (com) -- (wdd);
-\draw[->, thick] (ssb) |- (dm);
-\draw[->, thick] (wdd) |- (dm);
-\draw[->, thick] (dm) -- (pie);
-\draw[->, thick] (pie) -- (modern);
-
-
-\end{tikzpicture}}
-
-\end{frame}
-
-
-
-% ======================================================
-\section{Algorithm Evolution (2004–2025)}
-% ======================================================
-
-\begin{frame}{Algorithm Evolution of the PIE Family (2004–2025)}
-\scriptsize
-\renewcommand{\arraystretch}{1.0}
-\scalebox{0.8}{%
-\begin{tabular}{p{2.5cm} p{3cm} p{4cm} p{3cm}}
-\textbf{Stage} & \textbf{Representative Algorithms} & \textbf{Key Innovations} & \textbf{Mathematical Nature} \\
-\hline
-1 Early Iterative Engine (2004–2009) & PIE (Maiden \& Rodenburg, 2009, \textit{Ultramicroscopy}) & Introduced scan-overlap and error-reduction idea; single probe and strong phase approximation & Projection onto constraint sets (POCS) \\
-2 Stabilization Phase (2009–2014) & ePIE, rPIE & ePIE: joint probe/object update; rPIE: proportional gain for high dynamic range & Gradient-descent-like (ADMM style) \\
-3 Momentum and Robustness (2016–2018) & mPIE, SR-PIE, momentum-PIE & Added momentum, normalization, sub-pixel interpolation for faster convergence & Accelerated first-order optimization \\
-4 Statistical Modeling (2018–2020) & ML-Ptychography (Odstrčil, 2018, \textit{Opt. Express}) & Replaced empirical error with explicit likelihood (Poisson noise model) & Maximum-likelihood estimation (MLE) \\
-5 Mixed-state Modeling (2020– ) & Mixed-State ML-Ptychography (Chen et al., 2020, \textit{Nat. Commun.}) & Partial coherence modeling, multi-mode probes, mini-batch optimization & Probabilistic mixed-state + MLE \\
-6 Learning-driven (2021–2025) & Neural-PIE, Deep Ptycho, PtychoNN, Ptychoformer & Deep learning for mapping updates and priors & Deep learning + Variational Bayesian optimization \\
-\end{tabular}}
-\vspace{6pt}
-
-\textit{From linear models to hybrid Bayesian-learning frameworks, the PIE family evolved from physical iteration to differentiable inference.}
-\end{frame}
-
-
-
-% ======================================================
-\section{Modern Research Lines}
-% ======================================================
-
-\begin{frame}{Three Major Research Lines (2020–2025)}
-\small
-\renewcommand{\arraystretch}{1.05}
-\scalebox{0.8}{%
-\begin{tabular}{p{3.5cm} p{5cm} p{5cm}}
-\textbf{Line} & \textbf{Representative Work} & \textbf{Feature} \\
-\hline
-A. Physical Modeling Line & zPIE, Multi-slice PIE, Fresnel / Near-field, Partial Coherence & More accurate propagation and sample-thickness modeling; suited for physical realism \\
-B. Statistical / Bayesian Line & ML-PIE, Mixed-State PIE, Variational Inference & Probabilistic noise and coherence modeling; mathematically grounded optimization \\
-C. Neural Line & Neural-PIE, Ptychoformer, Deep Bayesian PIE & Fast, data-driven reconstruction; hybrid physics-learning design \\
-\end{tabular}}
-\vspace{8pt}
-
-
-\end{frame}
-
-% ======================================================
-\section{Propagation Models and Geometry}
-% ======================================================
-
-
-\begin{frame}{Propagation Models in Electron Ptychography}
-\begin{columns}
-\column{0.55\textwidth}
-\small
-\begin{itemize}
-\item \textbf{(A) Linearized models:} WPOA, Projection approximation.
-\item \textbf{(B) Paraxial nonlinear:} Multislice propagation, partial coherence.
-\item \textbf{(C) Full 3D / Nonparaxial:} Ewald curvature, dynamical diffraction, Bragg mode.
-\end{itemize}
-\column{0.45\textwidth}
-%\includegraphics[width=\linewidth]{propagation_models.png}
-\end{columns}
-\vspace{4pt}
-\textit{Key: Electron systems usually operate in quasi-Fresnel regime due to short $\lambda$ and limited z.}
-\end{frame}
-% ======================================================
-\section{Maximum-Likelihood PIE}
-% ======================================================
-
-\begin{frame}{Maximum-Likelihood Ptychography (ML-PIE)}
-\small
-\textbf{Motivation:}  
-Traditional PIE minimizes heuristic intensity error:
-\[
-E = \sum_j \|\,|\Psi_{\text{calc},j}| - \sqrt{I_{\text{meas},j}}\,\|^2
-\]
-which ignores detector noise statistics.  
-ML-PIE instead derives its loss from the \textbf{Poisson noise likelihood:}
-\[
-p(I_{\text{meas}}|I_{\text{calc}})=
-\frac{I_{\text{calc}}^{I_{\text{meas}}} e^{-I_{\text{calc}}}}{I_{\text{meas}}!}
-\]
-
-\textbf{Objective function (negative log-likelihood):}
-\[
-\mathcal{L}(O,P)=
-\sum_{j,\mathbf{k}}
-\bigl[I_{\text{calc},j}-I_{\text{meas},j}\ln I_{\text{calc},j}\bigr]
-\]
-\end{frame}
-
-% ------------------------------------------------------
-
-\begin{frame}{Iterative Update Scheme of ML-PIE}
-\small
-\textbf{1. Forward propagation:}
-\[
-\tilde{\Psi}_j = \mathcal{F}[\,P(\mathbf{r})O(\mathbf{r}-\mathbf{r}_j)\,], \quad
-I_{\text{calc},j}=|\tilde{\Psi}_j|^2
-\]
-
-\textbf{2. Likelihood-based residual:}
-\[
-\Delta\tilde{\Psi}_j=
-\frac{\tilde{\Psi}_j}{I_{\text{calc},j}}
-\bigl(I_{\text{meas},j}-I_{\text{calc},j}\bigr)
-\]
-
-\textbf{3. Back propagation:}
-\[
-\Delta\Psi_j=\mathcal{F}^{-1}[\Delta\tilde{\Psi}_j]
-\]
-
-\textbf{4. Object \& probe update:}
-\[
-O^{(n+1)}=O^{(n)}+\frac{P^*(\mathbf{r})\Delta\Psi_j}{|P|^2+\epsilon},
-\quad
-P^{(n+1)}=P^{(n)}+\frac{O^*(\mathbf{r}-\mathbf{r}_j)\Delta\Psi_j}{|O|^2+\epsilon}
-\]
-\end{frame}
-
-% ------------------------------------------------------
-
-\begin{frame}{Advantages and Extensions}
-\small
-\textbf{Key advantages:}
-\begin{itemize}
-  \item Physically consistent with Poisson photon/electron counting noise.
-  \item Naturally weights pixels by their signal strength (adaptive noise suppression).
-  \item Provides stable convergence and high SNR reconstructions.
-\end{itemize}
-
-\textbf{Extensions:}
-\begin{itemize}
-  \item \textbf{Mixed-State ML-PIE:} adds multiple probe modes for partial coherence.
-  \item \textbf{Bayesian / Variational PIE:} combines MLE with prior regularization.
-\end{itemize}
-
-
-\end{frame}
-
-
-
-
-
 
 %============================================================
-\section{Future Plan}
+\section{Code Reproduction}
 %============================================================
-\begin{frame}{Plans for Next Week}
+\begin{frame}{Reproduction of Chen Zhen et al. (2020) Results}
+\footnotesize
+
+\begin{center}\includegraphics[width=0.8\linewidth]{image1.jpg} 
+
+\end{center}
+
+\end{frame}
+
+\begin{frame}{Reproduction of Chen Zhen et al. (2020) Results}
+\footnotesize
+
+\begin{center}\includegraphics[width=0.9\linewidth]{image2.png} 
+
+\end{center}
+
+\end{frame}
+
+\begin{frame}{Reproduction of Chen Zhen et al. (2020) Results}
+\footnotesize
+
+\begin{center}\includegraphics[width=0.9\linewidth]{image3.png} 
+
+\end{center}
+
+\end{frame}
+\begin{frame}{Reproduction of Chen Zhen et al. (2020) Results}
+\footnotesize
+
+\begin{center}\includegraphics[width=0.9\linewidth]{image4.png} 
+
+\end{center}
+
+\end{frame}
+\begin{frame}{Reproduction of Chen Zhen et al. (2020) Results}
+\footnotesize
+
+\begin{center}
+
+\includegraphics[width=0.7\linewidth]{probe_mag_Niter2000.jpg} 
+\vspace{2mm}
+\includegraphics[width=0.7\linewidth]{probe_Niter2000.jpg}
+
+\end{center}
+
+\end{frame}
+\begin{frame}{Reproduction of Chen Zhen et al. (2020) Results}
+\footnotesize
+
+\begin{center}\includegraphics[width=0.3\linewidth]{obj_phase_roi_Niter1200.jpg} 
+  \vspace{2mm}
+\includegraphics[width=0.6\linewidth]{ZhenChen_exp.png} 
+\end{center}
+
+\end{frame}
+
+%============================================================
+\section{Algorithmic Philosophy: Projection vs Optimization}
+%============================================================
+
+\begin{frame}{Two Fundamental Families of Algorithms}
+\footnotesize
+Based on \textit{projection vs optimization} taxonomy derived from the uploaded notes (projection vs optimization.md).
+
+\begin{block}{Projection-Based (No Global Loss)}
+\begin{itemize}
+  \item ER, HIO, RAAR
+  \item Difference Map (DM), HPR, DR
+  \item PIE, ePIE, rPIE, AD-PIE, mPIE
+  \item Geometric constraints: Modulus \textit{projection}, Support \textit{projection}
+  \item No global objective; iteration is geometric
+\end{itemize}
+\end{block}
+
+\begin{block}{Optimization-Based (Has Global Loss)}
+\begin{itemize}
+  \item Maximum-Likelihood (ML) ptychography
+  \item Poisson/Gaussian likelihood models
+  \item Wirtinger gradient descent, Conjugate Gradient
+  \item True global minimization
+\end{itemize}
+\end{block}
+
+\end{frame}
+
+%------------------------------------------------------------
+\begin{frame}{Projection Family in Detail}
+\footnotesize
+
+\textbf{1. Classical POCS}
+\begin{itemize}
+  \item Sequential projections onto constraint sets
+  \item ER / HIO / RAAR
+\end{itemize}
+
+\textbf{2. Difference Map (DM)}
+\begin{itemize}
+  \item Projection + reflection operator
+  \item Strong convergence properties
+\end{itemize}
+
+\textbf{3. PIE Family}
+\begin{itemize}
+  \item Only diffraction constraint uses true projection
+  \item Object/probe updates = local least-squares corrections
+  \item No global cost function
+\end{itemize}
+
+\end{frame}
+
+%------------------------------------------------------------
+\begin{frame}{Optimization Family in Detail}
+\footnotesize
+
+Using content from Maximum-likelihood refinement notes.
+
+\textbf{1. Global Loss Function}
+\begin{itemize}
+\item Poisson: $L = -\sum(n\log I - I)$
+\item Gaussian: $L = \sum (I-n)^2 /(2\sigma^2)$
+\end{itemize}
+
+\textbf{2. Wirtinger Calculus}
+\begin{itemize}
+  \item Gradient wrt complex conjugate variable
+  \item Efficient and avoids full Hessian
+\end{itemize}
+
+\textbf{3. $\chi$-Term (Error Wave)}
+\begin{itemize}
+  \item Fourier-domain error field
+  \item Backpropagated to real space
+\end{itemize}
+
+\textbf{4. Conjugate Gradient (CG)}
+\begin{itemize}
+  \item Approximates Newton without Hessian
+  \item Polak–Ribière formula for conjugacy
+\end{itemize}
+
+\end{frame}
+
+%============================================================
+\section{Maximum-Likelihood Ptychography Theory}
+%============================================================
+
+\begin{frame}{Poisson PMF and Physical Meaning}
+\footnotesize
+From the uploaded ML notes.
+
+\begin{itemize}
+  \item Detector counts discrete electrons: Poisson statistics
+  \item $p(n|I) = I^n e^{-I}/n!$
+  \item High count: low noise; low count: high noise
+  \item Negative log-likelihood gives the global cost
+\end{itemize}
+
+\begin{block}{Negative Log-Likelihood}
+$L = -\sum_{jq}(n_{jq}\log I_{jq} - I_{jq})$
+\end{block}
+
+\end{frame}
+
+%------------------------------------------------------------
+\begin{frame}{$\chi$-Term and Wirtinger Gradient}
+\footnotesize
+
+\textbf{Definition:}
+$$\tilde{\chi}_{jq} = \frac{\partial L}{\partial I_{jq}}\tilde{\psi}_{jq} = \left(1 - \frac{n_{jq}}{I_{jq}}\right)\tilde{\psi}_{jq}$$
+
+\textbf{After inverse FFT:}
+$$\chi_{jr} = \mathcal{F}^{-1}(\tilde{\chi})$$
+
+Meaning:
+\begin{itemize}
+  \item Detector-plane residual
+  \item Backpropagated to sample plane
+  \item Drives gradient updates for object and probe
+\end{itemize}
+
+\end{frame}
+
+%============================================================
+\section{Conjugate Gradient (CG) for ML Reconstruction}
+%============================================================
+
+\begin{frame}{Why Steepest Descent is Slow}
 \footnotesize
 \begin{itemize}
-  \item [\ding{43}] Complete the study of electron dataset and do simulation of mixed-state ML-PIE in MatLab.
-  \item [\ding{43}] Study the principle of maximum-likelihood PIE.
-  \item [\ding{43}] Recalculate the algorithm from dpc to com, ssb and wdd ptychography.
+  \item Negative gradient is the steepest direction locally
+  \item But oscillates in long, curved valleys
+  \item "Zig-zag" behavior slows convergence
 \end{itemize}
+\end{frame}
 
+%------------------------------------------------------------
+\begin{frame}{Conjugate Gradient Essentials}
+\footnotesize
+
+Search direction:
+$$d^{(n)} = -g^{(n)} + \beta^{(n)}d^{(n-1)}$$
+
+Polak–Ribière coefficient:
+$$\beta^{(n)} = \frac{\langle g^{(n)}, g^{(n)} \rangle - \langle g^{(n)}, g^{(n-1)} \rangle}{\langle g^{(n-1)}, g^{(n-1)} \rangle}$$
+
+\begin{itemize}
+  \item Avoids zig-zag motion
+  \item Uses curvature without storing Hessian
+  \item Excellent for high-dimensional ptychography
+\end{itemize}
 
 \end{frame}
 
 
+
+%============================================================
+\section{Summary and Next Steps}
+%============================================================
+
+\begin{frame}{Summary}
+\footnotesize
+\begin{itemize}
+  \item Built a unified understanding of projection vs optimization methods.
+  \item Derived ML ptychography gradients from first principles.
+  \item Understood the role of $\chi$ as gradient carrier.
+  \item Learned why CG is the preferred optimizer.
+  \item Understood why electron ptychography requires ML.
+\end{itemize}
+\end{frame}
+
+%------------------------------------------------------------
+\begin{frame}{Next Week Plan}
+\footnotesize
+\begin{itemize}
+  \item immigrate MLPIE to Python.
+  \item study least-squares solver theories and implement it in Python.
+  \item Try position refinement in electron pty.
+  \item Study multislice theory.
+  \item Try adaptive-z in electron pty.
+\end{itemize}
+\end{frame}
+
+%============================================================
+\section*{Acknowledgement}
+%============================================================
+
+\begin{frame}[plain]
+\centering
+\vspace{1cm}
+{\Huge Thank You!}\\[3mm]
+{\large Questions and Discussion}
+\end{frame}
 
 \end{document}
